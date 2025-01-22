@@ -68,6 +68,9 @@ workflow {
 
     checkParameters()
 
+    // TODO
+    // Check input file exit and samplesheet is okay before staring the pipeline
+
      def fastq_files = [params.fastq + '/*r_{1,2}.fq.gz', params.fastq + '/*r_{1,2}.fastq.gz']
 
     // FastQC
