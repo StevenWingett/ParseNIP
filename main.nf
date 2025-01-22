@@ -15,6 +15,7 @@ params.samp_list = null
 params.concatenate = false
 params.fastq = null
 params.trim = false
+params.genome = null
 
 log.info """\
     P A R S E  E V E R C O D E - N F  P I P E L I N E
@@ -23,6 +24,7 @@ log.info """\
     FASTA folder                    : ${params.fasta}
     GTF file                        : ${params.gtf}
     Genome Name                     : ${params.genome_name}
+    Genome                          : ${params.genome}
     Pre-built genome index folder   : ${params.genome_dir}
     FASTQ files folder              : ${params.fastq}
     Chemistry version               : ${params.chemistry}
@@ -51,43 +53,9 @@ include { FASTQC } from './modules/local/fastqc/fastqc/main.nf'
 include { MULTIQC } from './modules/local/multiqc/multiqc/main.nf'
 
 
-// Check parameters
+// Variables set in functions called below
 build_index = false
 perform_mapping = false
-
-def checkParameters() {
-
-    // Should we build the genome index file?
-    if( (params.fasta == null) && (params.gtf == null) && (params.genome_name == null) && (params.genome_dir == null) ) {
-        error("Error:\nSpecify a genome index folder --genome_dir, OR make a genome index denovo with --fasta/--gtf/--genome_name")
-    }
-
-    if ( (params.fasta != null) || (params.gtf != null) || (params.genome_name != null) ) {
-        if ( (params.fasta == null) || (params.gtf == null) || (params.genome_name == null) ) {
-            error("Error:\nParameters --fasta/--gtf/--genome_name need to be specified altogether, or not at all!")
-        }
-        build_index = true
-    }
-
-    //  Don't specify a new genome to build, if one already exists
-    if ( (params.genome_dir != null) && (build_index == true) ){
-        error("Error:\nDon't specify an existing genome (--genome_dir) if also building a genome index from scratch!")
-    }
-
-    // Do we have all the relevant files for mapping?
-    if ( (params.fastq != null) || (params.genome_dir != null) || (params.samp_list != null) ) {  // Mapping intended
-        if ( (params.fastq == null) || (params.samp_list == null) ) {
-            error("Error:\nParameters --fastq/--samp_list need to be specified altogether, or not at all!")
-        }
-        perform_mapping = true
-    }
-}
-
-
-def getLibraryId(filename) {
-    libraryID = filename.replaceFirst(/\.s_\d$/, "")
-    return libraryID
-}
 
 
 /*
@@ -219,6 +187,41 @@ def getGenomeAttribute(attribute) {
         }
     }
     return null
+}
+
+
+def checkParameters() {
+
+    // Should we build the genome index file?
+    if( (params.fasta == null) && (params.gtf == null) && (params.genome_name == null) && (params.genome_dir == null) ) {
+        error("Error:\nSpecify a genome index folder --genome_dir, OR make a genome index denovo with --fasta/--gtf/--genome_name")
+    }
+
+    if ( (params.fasta != null) || (params.gtf != null) || (params.genome_name != null) ) {
+        if ( (params.fasta == null) || (params.gtf == null) || (params.genome_name == null) ) {
+            error("Error:\nParameters --fasta/--gtf/--genome_name need to be specified altogether, or not at all!")
+        }
+        build_index = true
+    }
+
+    //  Don't specify a new genome to build, if one already exists
+    if ( (params.genome_dir != null) && (build_index == true) ){
+        error("Error:\nDon't specify an existing genome (--genome_dir) if also building a genome index from scratch!")
+    }
+
+    // Do we have all the relevant files for mapping?
+    if ( (params.fastq != null) || (params.genome_dir != null) || (params.samp_list != null) ) {  // Mapping intended
+        if ( (params.fastq == null) || (params.samp_list == null) ) {
+            error("Error:\nParameters --fastq/--samp_list need to be specified altogether, or not at all!")
+        }
+        perform_mapping = true
+    }
+}
+
+
+def getLibraryId(filename) {
+    libraryID = filename.replaceFirst(/\.s_\d$/, "")
+    return libraryID
 }
 
 /*
