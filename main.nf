@@ -1,8 +1,13 @@
 #!/usr/bin/env nextflow
 
-// Pipeline parameters
-params.fasta = null
-params.gtf = null
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PARAMETER VALUES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+params.fasta = getGenomeAttribute('fasta')
+params.gtf = getGenomeAttribute('gtf')
 params.genome_name = null
 params.genome_dir = null
 params.chemistry = 'v3'
@@ -31,7 +36,12 @@ log.info """\
     .stripIndent()
 
 
-// Include modules
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
 include { SPLITPIPE_INDEX } from './modules/local/splitpipe/index/main.nf'
 include { SPLITPIPE_MAP } from './modules/local/splitpipe/map/main.nf'
 include { CONCATENATE_FILES } from './modules/local/cat/contatenate_files/main.nf'
@@ -47,17 +57,10 @@ perform_mapping = false
 
 def checkParameters() {
 
-    // Are there any unrecognised parameters?
-    // TODO
-
-    // Check required parameters are specified
-    // TODO
-
     // Should we build the genome index file?
     if( (params.fasta == null) && (params.gtf == null) && (params.genome_name == null) && (params.genome_dir == null) ) {
         error("Error:\nSpecify a genome index folder --genome_dir, OR make a genome index denovo with --fasta/--gtf/--genome_name")
     }
-
 
     if ( (params.fasta != null) || (params.gtf != null) || (params.genome_name != null) ) {
         if ( (params.fasta == null) || (params.gtf == null) || (params.genome_name == null) ) {
@@ -66,12 +69,12 @@ def checkParameters() {
         build_index = true
     }
 
-    //  Do specify a new genome to build, if one already exists
+    //  Don't specify a new genome to build, if one already exists
     if ( (params.genome_dir != null) && (build_index == true) ){
         error("Error:\nDon't specify an existing genome (--genome_dir) if also building a genome index from scratch!")
     }
 
-    // Do we have all the relevant files for mapping
+    // Do we have all the relevant files for mapping?
     if ( (params.fastq != null) || (params.genome_dir != null) || (params.samp_list != null) ) {  // Mapping intended
         if ( (params.fastq == null) || (params.samp_list == null) ) {
             error("Error:\nParameters --fastq/--samp_list need to be specified altogether, or not at all!")
@@ -87,7 +90,12 @@ def getLibraryId(filename) {
 }
 
 
-// Pipeline workflow
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    RUN MAIN WORKFLOW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
 workflow {
 
     checkParameters()
@@ -192,3 +200,29 @@ workflow {
 workflow.onComplete {
     log.info ( workflow.success ? "\nDone!" : "Oops .. something went wrong" )
 }
+
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    FUNCTIONS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+//
+// Get attribute from genome config file e.g. fasta
+//
+
+def getGenomeAttribute(attribute) {
+    if (params.genomes && params.genome && params.genomes.containsKey(params.genome)) {
+        if (params.genomes[ params.genome ].containsKey(attribute)) {
+            return params.genomes[ params.genome ][ attribute ]
+        }
+    }
+    return null
+}
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    THE END
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
