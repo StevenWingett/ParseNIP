@@ -140,13 +140,15 @@ workflow {
 
     // Combine sublibraries - when necessary
     //SPLITPIPE_MAP.out.count().view()
-    map_ch = SPLITPIPE_MAP.out.collect().filter { v -> v.size() > 1 }   // Only combine if there is more than 1 sublibrary
+    if (perform_mapping) {
+        map_ch = SPLITPIPE_MAP.out.collect().filter { v -> v.size() > 1 }   // Only combine if there is more than 1 sublibrary
 
-    if(build_index){
-        SPLITPIPE_COMBINE(map_ch, index_ch)
-    } else {
-        //mychannel = SPLITPIPE_MAP.out.collect()    // Check this
-        SPLITPIPE_COMBINE(map_ch, file(params.genome_dir))
+        if(build_index){
+            SPLITPIPE_COMBINE(map_ch, index_ch)
+        } else {
+            //mychannel = SPLITPIPE_MAP.out.collect()    // Check this
+            SPLITPIPE_COMBINE(map_ch, file(params.genome_dir))
+        }
     }
 
 
