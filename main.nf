@@ -21,9 +21,9 @@ log.info """\
     P A R S E  E V E R C O D E - N F  P I P E L I N E
     =================================================
     Output folder                   : ${params.outdir}
-    FASTA folder                    : ${params.fasta}
-    GTF file                        : ${params.gtf}
-    Genome Name                     : ${params.genome_name}
+    FASTA file(s)                   : ${params.fasta}
+    GTF file(s)                     : ${params.gtf}
+    Genome Name(s)                  : ${params.genome_name}
     Genome                          : ${params.genome}
     Pre-built genome index folder   : ${params.genome_dir}
     FASTQ files folder              : ${params.fastq}
@@ -110,7 +110,12 @@ workflow {
     // Create split-pipe index file
     if(build_index) {
         println("Building genome index")
-        SPLITPIPE_INDEX(file(params.fasta), file(params.gtf), params.genome_name)
+        
+        fasta_ch = Channel.fromPath(params.fasta.tokenize(',')).collect()
+        gtf_ch = Channel.fromPath(params.gtf.tokenize(',')).collect()
+        def genome_names = params.genome_name.replace(",", " ")    // Convert comma-separated to space-separated, for split-pipe
+
+        SPLITPIPE_INDEX(fasta_ch, gtf_ch, genome_names)
     }
 
 
