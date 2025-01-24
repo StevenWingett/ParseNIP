@@ -215,8 +215,15 @@ def checkParameters() {
     }
 
     //  Don't specify a new genome to build, if one already exists
-    if ( (params.genome_dir != null) && (build_index == true) ){
+    if ( (params.genome_dir != null) && (build_index == true) ) {
         error("Error:\nDon't specify an existing genome (--genome_dir) if also building a genome index from scratch!")
+    }
+
+    // Ensure an equal number of FASTA, GTF and genome name(s) have been specified
+    if (build_index = true) {
+       if ( (params.gtf.count(',') != params.fasta.count(',')) || (params.gtf.count(',') != params.genome_name.count(',')) ) {
+            error("Error:\nParameters --fasta, --gtf and --genome_name need the same number of parameters (in a comma-separated list)")
+       }
     }
 
     // Do we have all the relevant files for mapping?
