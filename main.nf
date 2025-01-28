@@ -16,6 +16,7 @@ params.concatenate = false
 params.fastq = null
 params.trim = false
 params.genome = null
+params.skip_fastqc = false
 
 log.info """\
     P A R S E  E V E R C O D E - N F  P I P E L I N E
@@ -29,6 +30,7 @@ log.info """\
     FASTQ files folder              : ${params.fastq}
     Chemistry version               : ${params.chemistry}
     Sample list file                : ${params.samp_list}
+    Skip FastQC                     : ${params.skip_fastqc}
     Hard trim FASTQ files           : ${params.trim}
     Concatenate FASTQ files         : ${params.concatenate}
     Author                          : ${workflow.manifest.author}
@@ -74,11 +76,17 @@ workflow {
      def fastq_files = [params.fastq + '/*r_{1,2}.fq.gz', params.fastq + '/*r_{1,2}.fastq.gz']
 
     // FastQC
-    Channel
-    .fromPath(fastq_files)
-    .set { reads_ch }
+    if(params.skip_fastqc){
+        println("Skipping FastQC")
+    } else {
+        println("Running FastQC")
 
-    FASTQC(reads_ch)
+        Channel
+        .fromPath(fastq_files)
+        .set { reads_ch }
+
+        FASTQC(reads_ch)
+    }
  
 
     // Trimming
@@ -171,8 +179,10 @@ workflow {
 
 
     // MultiQC
-    results_ch = FASTQC.out.collect()
-    MULTIQC(results_ch)
+    if(! params.skip_fastqc){
+        results_ch = FASTQC.out.collect()
+        MULTIQC(results_ch)
+    }
 }
 
 workflow.onComplete {
