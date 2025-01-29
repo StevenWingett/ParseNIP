@@ -54,6 +54,7 @@ include { TRIMGALORE_TRIM } from './modules/local/trim_galore/trim_galore_hardtr
 include { FASTQC } from './modules/local/fastqc/fastqc/main.nf'
 
 include { SCANPY_SINGLECELLQC } from './modules/local/scanpy/singlecellqc/main.nf'
+include { SCANPY_SINGLECELLQC as SCANPY_SINGLECELLQC2} from './modules/local/scanpy/singlecellqc/main.nf'
 
 include { MULTIQC } from './modules/local/multiqc/multiqc/main.nf'
 
@@ -173,23 +174,19 @@ workflow {
     //TODO
 
 
-
-
     // spipe-summary results
     // TODO
+
 
     // Make Seurat / Scanpy objects
     // TODO
 
     // Single cell QC
-    // TODO
     splitpipe_map_ch = SPLITPIPE_MAP.out
-    //splitpipe_combine_ch = SPLITPIPE_COMBINE.out
-    //splitpipe_all_output = splitpipe_map_ch.mix(splitpipe_combine_ch)
-    //splitpipe_all_output.view()
+    splitpipe_combine_ch = SPLITPIPE_COMBINE.out
 
-    SCANPY_SINGLECELLQC(splitpipe_map_ch)
-    //SCANPY_SINGLECELLQC(splitpipe_map_ch)
+    SCANPY_SINGLECELLQC(splitpipe_map_ch, "separate")
+    SCANPY_SINGLECELLQC2(splitpipe_combine_ch, "combined")
 
 
     // MultiQC

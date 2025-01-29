@@ -10,15 +10,14 @@
 
     input:
         path(results_folders)
+        val(prefix)
 
     output:
-        path '*.txt'
         path 'scanpy_singlecellqc_*'
 
 
     script:
     """
-    ls -d */*/DGE_filtered/ > DGE_folders_to_process.txt
-    for D in */*/DGE_filtered/; do echo \$D; python3 ${projectDir}/bin/scanpy_qc.py --directory \$D --outdir \$D --pipeline; done
+    for D in */*/DGE_filtered/; do echo \$D; python3 ${projectDir}/bin/scanpy_qc.py --directory \$D --outdir \$D --pipeline ${prefix}; done
     """
 }

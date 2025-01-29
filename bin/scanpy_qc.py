@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("directory", action="store", type=str, metavar='directory', help='Path to the split-pipe output directory that needs processing')
 parser.add_argument("outdir", action="store", type=str, metavar='outdir', help='Write result to here')
-parser.add_argument("--pipeline", action='store_true', help='Scipt being used as part of pipeline - if so use custom output directory location')
+parser.add_argument("--pipeline", action="store", type=str, metavar='pipeline', help='Scipt being used as part of pipeline - if so use custom output directory location')
 
 args = parser.parse_known_args()    #Use parse_known_arg to differentiate between arguments pre-specified and those that are not
 
@@ -41,9 +41,9 @@ sc.settings.set_figure_params(dpi=100, fontsize=10, dpi_save=300, figsize=(5,4),
 #sc.settings.figdir = '/mnt/output_figures/'
 
 
-if(options.pipeline):
+if(options.pipeline is not None):
     elements = options.outdir.split('/')
-    sc.settings.figdir = 'scanpy_singlecellqc_' + '/'.join(elements[:-1])
+    sc.settings.figdir = f'scanpy_singlecellqc_{options.pipeline}_' + '/'.join(elements[:-1])
 else:
     sc.settings.figdir = options.outdir
 
