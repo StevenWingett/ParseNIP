@@ -11,11 +11,24 @@
 import numpy as np
 import pandas as pd
 import scanpy as sc
-import scipy
-import os
-import scipy.io as sio
+#import scipy
+#import os
+#import scipy.io as sio
+import argparse
 
-data_path = 'result_copy/splitpipe_combined_sublibraries/SampleA/DGE_unfiltered/'
+
+# Argumanets
+parser = argparse.ArgumentParser()
+
+parser.add_argument("directory", action="store", type=str, metavar='directory', help='Path to the split-pipe output directory that needs processing')
+parser.add_argument("outdir", action="store", type=str, metavar='outdir', help='Write result to here')
+parser.add_argument("--pipeline", action='store_true', help='Scipt being used as part of pipeline - if so use custom output directory location')
+
+args = parser.parse_known_args()    #Use parse_known_arg to differentiate between arguments pre-specified and those that are not
+
+options = args[0]
+data_path = options.directory + '/'
+#data_path = 'result_copy/splitpipe_combined_sublibraries/SampleA/DGE_unfiltered/'
 
 # oras://community.wave.seqera.io/library/pip_igraph_leidenalg_scanpy:ae205e6e609e6292
 
@@ -25,7 +38,14 @@ data_path = 'result_copy/splitpipe_combined_sublibraries/SampleA/DGE_unfiltered/
 
 sc.settings.verbosity = 1 # verbosity: errors (0), warnings (1), info (2), hints (3)
 sc.settings.set_figure_params(dpi=100, fontsize=10, dpi_save=300, figsize=(5,4), format='png')
-sc.settings.figdir = '/mnt/output_figures/'
+#sc.settings.figdir = '/mnt/output_figures/'
+
+
+if(options.pipeline):
+    elements = options.outdir.split('/')
+    sc.settings.figdir = 'scanpy_singlecellqc_' + '/'.join(elements[:-1])
+else:
+    sc.settings.figdir = options.outdir
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
@@ -34,6 +54,7 @@ sc.settings.figdir = '/mnt/output_figures/'
 
 # The DGE_filtered folder contains the expression matrix, genes, and files
 # NOTE: split-pipe versions older than 1.1.0 used 'DGE.mtx'
+print(data_path)
 adata = sc.read_mtx(data_path + 'count_matrix.mtx')
 
 # reading in gene and cell data

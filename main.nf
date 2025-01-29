@@ -52,7 +52,11 @@ include { CONCATENATE_FILES } from './modules/local/cat/contatenate_files/main.n
 include { SPLITPIPE_COMBINE } from './modules/local/splitpipe/combine/main.nf'
 include { TRIMGALORE_TRIM } from './modules/local/trim_galore/trim_galore_hardtrim/main.nf'
 include { FASTQC } from './modules/local/fastqc/fastqc/main.nf'
+
+include { SCANPY_SINGLECELLQC } from './modules/local/scanpy/singlecellqc/main.nf'
+
 include { MULTIQC } from './modules/local/multiqc/multiqc/main.nf'
+
 
 
 // Variables set in functions called below
@@ -166,16 +170,26 @@ workflow {
 
 
     // Mapping QC
-    // TODO
+    //TODO
+
+
+
 
     // spipe-summary results
     // TODO
 
-    // Make Seuarat / Scanpy objects
+    // Make Seurat / Scanpy objects
     // TODO
 
     // Single cell QC
     // TODO
+    splitpipe_map_ch = SPLITPIPE_MAP.out
+    //splitpipe_combine_ch = SPLITPIPE_COMBINE.out
+    //splitpipe_all_output = splitpipe_map_ch.mix(splitpipe_combine_ch)
+    //splitpipe_all_output.view()
+
+    SCANPY_SINGLECELLQC(splitpipe_map_ch)
+    //SCANPY_SINGLECELLQC(splitpipe_map_ch)
 
 
     // MultiQC
@@ -230,7 +244,7 @@ def checkParameters() {
     }
 
     // Ensure an equal number of FASTA, GTF and genome name(s) have been specified
-    if (build_index = true) {
+    if (build_index == true) {
        if ( (params.gtf.count(',') != params.fasta.count(',')) || (params.gtf.count(',') != params.genome_name.count(',')) ) {
             error("Error:\nParameters --fasta, --gtf and --genome_name need the same number of parameters (in a comma-separated list)")
        }
