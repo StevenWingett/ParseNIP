@@ -6,9 +6,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+params.genome = null
 params.fasta = getGenomeAttribute('fasta')
 params.gtf = getGenomeAttribute('gtf')
-params.genome = null
 params.genome_name = null
 params.genome_dir = null
 params.chemistry = 'v3'
