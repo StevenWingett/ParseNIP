@@ -8,6 +8,7 @@
 
 params.fasta = getGenomeAttribute('fasta')
 params.gtf = getGenomeAttribute('gtf')
+params.genome = null
 params.genome_name = null
 params.genome_dir = null
 params.chemistry = 'v3'
@@ -15,7 +16,6 @@ params.samp_list = null
 params.concatenate = false
 params.fastq = null
 params.trim = false
-params.genome = null
 params.skip_fastqc = false
 
 log.info """\
@@ -81,16 +81,18 @@ workflow {
      def fastq_files = [params.fastq + '/*r_{1,2}.fq.gz', params.fastq + '/*r_{1,2}.fastq.gz']
 
     // FastQC
-    if(params.skip_fastqc){
-        println("Skipping FastQC")
-    } else {
-        println("Running FastQC")
+    if(perform_mapping) {
+        if(params.skip_fastqc){
+            println("Skipping FastQC")
+        } else {
+            println("Running FastQC")
 
-        Channel
-        .fromPath(fastq_files)
-        .set { reads_ch }
+            Channel
+            .fromPath(fastq_files)
+            .set { reads_ch }
 
-        FASTQC(reads_ch)
+            FASTQC(reads_ch)
+        }
     }
  
 
@@ -182,17 +184,21 @@ workflow {
     // TODO
 
     // Single cell QC
-    splitpipe_map_ch = SPLITPIPE_MAP.out
-    splitpipe_combine_ch = SPLITPIPE_COMBINE.out
+    if(perform_mapping) {
+        splitpipe_map_ch = SPLITPIPE_MAP.out
+        splitpipe_combine_ch = SPLITPIPE_COMBINE.out
 
-    SCANPY_SINGLECELLQC(splitpipe_map_ch, "separate")
-    SCANPY_SINGLECELLQC2(splitpipe_combine_ch, "combined")
+        SCANPY_SINGLECELLQC(splitpipe_map_ch, "separate")
+        SCANPY_SINGLECELLQC2(splitpipe_combine_ch, "combined")
+    }
 
 
     // MultiQC
-    if(! params.skip_fastqc){
-        results_ch = FASTQC.out.collect()
-        MULTIQC(results_ch)
+    if(perform_mapping){
+        if(! params.skip_fastqc){
+            results_ch = FASTQC.out.collect()
+            MULTIQC(results_ch)
+        }
     }
 }
 
