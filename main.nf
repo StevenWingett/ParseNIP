@@ -52,12 +52,9 @@ include { CONCATENATE_FILES } from './modules/local/cat/contatenate_files/main.n
 include { SPLITPIPE_COMBINE } from './modules/local/splitpipe/combine/main.nf'
 include { TRIMGALORE_TRIM } from './modules/local/trim_galore/trim_galore_hardtrim/main.nf'
 include { FASTQC } from './modules/local/fastqc/fastqc/main.nf'
-
 include { SCANPY_SINGLECELLQC } from './modules/local/scanpy/singlecellqc/main.nf'
 include { SCANPY_SINGLECELLQC as SCANPY_SINGLECELLQC2} from './modules/local/scanpy/singlecellqc/main.nf'
-
 include { MULTIQC } from './modules/local/multiqc/multiqc/main.nf'
-
 
 
 // Variables set in functions called below
@@ -77,6 +74,19 @@ workflow {
 
     // TODO
     // Check input file exit and samplesheet is okay before staring the pipeline
+
+
+    // Create split-pipe index file
+    if(build_index) {
+        println("Building genome index")
+        
+        fasta_ch = Channel.fromPath(params.fasta.tokenize(',')).collect()
+        gtf_ch = Channel.fromPath(params.gtf.tokenize(',')).collect()
+        def genome_names = params.genome_name.replace(",", " ")    // Convert comma-separated to space-separated, for split-pipe
+
+        SPLITPIPE_INDEX(fasta_ch, gtf_ch, genome_names)
+    }
+
 
      def fastq_files = [params.fastq + '/*r_{1,2}.fq.gz', params.fastq + '/*r_{1,2}.fastq.gz']
 
@@ -119,18 +129,6 @@ workflow {
             .set { fastq_ch }
         }
             CONCATENATE_FILES(fastq_ch)
-    }
-
-
-    // Create split-pipe index file
-    if(build_index) {
-        println("Building genome index")
-        
-        fasta_ch = Channel.fromPath(params.fasta.tokenize(',')).collect()
-        gtf_ch = Channel.fromPath(params.gtf.tokenize(',')).collect()
-        def genome_names = params.genome_name.replace(",", " ")    // Convert comma-separated to space-separated, for split-pipe
-
-        SPLITPIPE_INDEX(fasta_ch, gtf_ch, genome_names)
     }
 
 
