@@ -52,9 +52,14 @@ include { CONCATENATE_FILES } from './modules/local/cat/contatenate_files/main.n
 include { SPLITPIPE_COMBINE } from './modules/local/splitpipe/combine/main.nf'
 include { TRIMGALORE_TRIM } from './modules/local/trim_galore/trim_galore_hardtrim/main.nf'
 include { FASTQC } from './modules/local/fastqc/fastqc/main.nf'
+
+include { SPLITPIPE_QC} from './modules/local/splitpipe_qc/splitpipe_qc/main.nf'
+
 include { SCANPY_SINGLECELLQC } from './modules/local/scanpy/singlecellqc/main.nf'
 include { SCANPY_SINGLECELLQC as SCANPY_SINGLECELLQC2} from './modules/local/scanpy/singlecellqc/main.nf'
 include { MULTIQC } from './modules/local/multiqc/multiqc/main.nf'
+
+
 
 
 // Variables set in functions called below
@@ -172,6 +177,14 @@ workflow {
 
     // Mapping QC
     //TODO
+    if(perform_mapping) {
+        println("Performing QC on split-pipe mapping")
+        map_ch2 = SPLITPIPE_MAP.out.collect()   // Includes output even if only 1 sublibrary (unlike map_ch)
+        SPLITPIPE_QC(map_ch2)
+    }
+
+
+
 
 
     // spipe-summary results
