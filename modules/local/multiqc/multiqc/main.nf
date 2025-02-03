@@ -16,6 +16,7 @@
 
     script:
     """
-    multiqc *
+    # MultiQC option reports 2 directories to avoid name clashes with barcode_headAligned_anno.bam
+    multiqc  -d -dd 2 *
     """
 }
