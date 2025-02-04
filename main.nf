@@ -190,10 +190,6 @@ workflow {
         SCANPY_SINGLECELLQC2(splitpipe_combine_ch, "combined")
     }
 
-    splitpipe_map_ch.view()
-    println()
-    splitpipe_combine_ch.view()
-    println()
 
     // Make Seurat object
     if(perform_mapping){
