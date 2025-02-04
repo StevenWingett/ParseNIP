@@ -1,6 +1,6 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# # Import of matrix data, filtering and Quality Control using Scapy following the Parse Bioscienes tutorial
+# # Import of matrix data, filtering and Quality Control using Scanpy following the Parse Bioscienes tutorial
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("directory", action="store", type=str, metavar='directory', help='Path to the split-pipe output directory that needs processing')
 parser.add_argument("outdir", action="store", type=str, metavar='outdir', help='Write result to here')
-parser.add_argument("--pipeline", action="store", type=str, metavar='pipeline', help='Scipt being used as part of pipeline - if so use custom output directory location')
+parser.add_argument("--pipeline", action="store", type=str, metavar='pipeline', help='Script being used as part of pipeline - if so use custom output directory location')
 
 args = parser.parse_known_args()    #Use parse_known_arg to differentiate between arguments pre-specified and those that are not
 

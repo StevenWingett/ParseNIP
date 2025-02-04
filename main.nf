@@ -55,6 +55,8 @@ include { FASTQC } from './modules/local/fastqc/fastqc/main.nf'
 include { SPLITPIPE_QC} from './modules/local/splitpipe_qc/splitpipe_qc/main.nf'
 include { SCANPY_SINGLECELLQC } from './modules/local/scanpy/singlecellqc/main.nf'
 include { SCANPY_SINGLECELLQC as SCANPY_SINGLECELLQC2} from './modules/local/scanpy/singlecellqc/main.nf'
+include { SEURAT_BUILDSEURATOBJECT} from './modules/local/seurat/build_object/main.nf'
+include { SEURAT_BUILDSEURATOBJECT as SEURAT_BUILDSEURATOBJECT2} from './modules/local/seurat/build_object/main.nf'
 include { MULTIQC } from './modules/local/multiqc/multiqc/main.nf'
 
 
@@ -171,11 +173,6 @@ workflow {
     }
 
 
-    // Mapping QC
-    //TODO
-
-
-
     // spipe-summary results
     if(perform_mapping) {
         println("Performing QC on split-pipe mapping")
@@ -184,9 +181,6 @@ workflow {
     }
 
 
-    // Make Seurat / Scanpy objects
-    // TODO
-
     // Single cell QC
     if(perform_mapping) {
         splitpipe_map_ch = SPLITPIPE_MAP.out
@@ -194,6 +188,17 @@ workflow {
 
         SCANPY_SINGLECELLQC(splitpipe_map_ch, "separate")
         SCANPY_SINGLECELLQC2(splitpipe_combine_ch, "combined")
+    }
+
+    splitpipe_map_ch.view()
+    println()
+    splitpipe_combine_ch.view()
+    println()
+
+    // Make Seurat object
+    if(perform_mapping){
+        SEURAT_BUILDSEURATOBJECT(splitpipe_map_ch, "separate")
+        SEURAT_BUILDSEURATOBJECT2(splitpipe_combine_ch, "combined")
     }
 
 
