@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# In[ ]:
 
 
 # Takes parse mapping file and produces graphs
@@ -11,7 +11,7 @@
 # [sublibrary_name]/process/pre_align_stats.csv
 
 
-# In[6]:
+# In[ ]:
 
 
 import pandas as pd
@@ -21,7 +21,7 @@ import os
 from matplotlib import pyplot as plt
 
 
-# In[7]:
+# In[ ]:
 
 
 categories_to_select = pd.Series(['number_of_reads',
@@ -47,7 +47,7 @@ def convert_to_percentages(input_data):
                                                          
 
 
-# In[8]:
+# In[ ]:
 
 
 #Import data
@@ -56,8 +56,12 @@ sublibrary_folders = glob.glob("*/")
 mapping_results = pd.DataFrame()
 
 for sublibrary_folder in sublibrary_folders:
-    mapping_results_file = f'{sublibrary_folder}process/pre_align_stats.csv'   # Trailing '/' in sublibrary_folder
+  
+    if sublibrary_folder == 'mapping_summary_plots/':   # When testing the script, don't include output file in input
+        continue
 
+    mapping_results_file = f'{sublibrary_folder}process/pre_align_stats.csv'   # Trailing '/' in sublibrary_folder
+    
     if os.path.isfile(mapping_results_file):   # Check file present (ignores non-mapping results sub-folders)
         print(f'Reading in mapping data file: {mapping_results_file}')
         mapping_results_partial = pd.read_csv(mapping_results_file, index_col='statistic')
@@ -67,7 +71,7 @@ for sublibrary_folder in sublibrary_folders:
 del mapping_results_partial
 
 
-# In[9]:
+# In[ ]:
 
 
 # Format
@@ -75,29 +79,25 @@ mapping_results = mapping_results.loc[categories_to_select, :]
 mapping_results = mapping_results.pivot(columns='sublibrary', values='value')   # Wide format
 
 
-# In[10]:
+# In[ ]:
 
 
 # Calculate new data terms
 mapping_results.loc['not_valid_barcode', :] = mapping_results.loc['number_of_reads', :] - mapping_results.loc['reads_valid_barcode', :]  - mapping_results.loc['reads_ambig_bc', :]
 mapping_results.loc['unmapped', :] = mapping_results.loc['reads_align_input', :] - mapping_results.loc['reads_align_multimap', :]  - mapping_results.loc['reads_align_too_many_loci', :] - mapping_results.loc['reads_align_unique', :]
 mapping_results.loc['other_genomic_location', :] = mapping_results.loc['reads_align_unique', :] - mapping_results.loc['reads_map_transcriptome', :]
+mapping_results = mapping_results.rename(mapper={'number_of_tscp' : 'deduplicated_reads'})
+mapping_results.loc['duplicate_copies', :] = mapping_results.loc['reads_map_transcriptome', :] - mapping_results.loc['deduplicated_reads', :]
 
 
-# In[11]:
+# In[ ]:
 
 
 mapping_results = mapping_results.transpose()
 mapping_results = mapping_results.astype('int')
 
 
-# In[12]:
-
-
-mapping_results
-
-
-# In[13]:
+# In[ ]:
 
 
 # Make output directories
@@ -108,7 +108,7 @@ for image_format in image_formats:
         os.makedirs(outsubdir)
 
 
-# In[14]:
+# In[ ]:
 
 
 # Barcode plots
@@ -126,7 +126,7 @@ for image_format in image_formats:
 plt.show()
 
 
-# In[15]:
+# In[ ]:
 
 
 barcode_data_pc = convert_to_percentages(barcode_data)
@@ -142,7 +142,7 @@ for image_format in image_formats:
 plt.show()
 
 
-# In[16]:
+# In[ ]:
 
 
 # Mapping type plots
@@ -160,7 +160,7 @@ for image_format in image_formats:
 plt.show()
 
 
-# In[17]:
+# In[ ]:
 
 
 align_data_pc = convert_to_percentages(align_data)
@@ -176,7 +176,7 @@ for image_format in image_formats:
 plt.show()
 
 
-# In[18]:
+# In[ ]:
 
 
 # Genomic location plots
@@ -194,7 +194,7 @@ for image_format in image_formats:
 plt.show()
 
 
-# In[19]:
+# In[ ]:
 
 
 location_data_pc = convert_to_percentages(location_data)
@@ -210,14 +210,42 @@ for image_format in image_formats:
 plt.show()
 
 
-# In[20]:
+# In[ ]:
 
 
-print('Done')
+# Duplication plots
+columns_to_select = ['deduplicated_reads',  'duplicate_copies']              
+deduplication_data = mapping_results.loc[:, columns_to_select]
+deduplication_data.plot(kind='bar', stacked=True)
+plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
+
+filename_base = f'deduplication_plots'
+for image_format in image_formats:
+    outfile = f'{outdir}/{image_format}/{filename_base}.{image_format}'
+    print(f'Writing to {outfile}')
+    plt.savefig(fname=outfile, bbox_inches='tight', pad_inches=0.5)
+
+plt.show()
 
 
 # In[ ]:
 
 
+deduplication_data_pc = convert_to_percentages(deduplication_data)
+deduplication_data_pc.plot(kind='bar', stacked=True)
+plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
 
+filename_base = f'deduplication_plots_pc'
+for image_format in image_formats:
+    outfile = f'{outdir}/{image_format}/{filename_base}.{image_format}'
+    print(f'Writing to {outfile}')
+    plt.savefig(fname=outfile, bbox_inches='tight', pad_inches=0.5)
+
+plt.show()
+
+
+# In[ ]:
+
+
+print('Done')
 
