@@ -6,7 +6,7 @@
 
  process SPLITPIPE_QC {
 
-    publishDir params.outdir + '/scanpy_mapping_QC', mode: 'copy'
+    publishDir params.outdir + '/splitpipe_mapping_QC', mode: 'copy'
 
     input:
         path(results_folders)
