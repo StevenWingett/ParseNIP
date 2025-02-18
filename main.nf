@@ -183,7 +183,7 @@ workflow {
 
     // Single cell QC
     if(perform_mapping) {
-        splitpipe_map_ch = SPLITPIPE_MAP.out
+        splitpipe_map_ch = SPLITPIPE_MAP.out.collect()    //  Finish mapping before moving on - else failure in later step causes mapping to stop
         splitpipe_combine_ch = SPLITPIPE_COMBINE.out
 
         SCANPY_SINGLECELLQC(splitpipe_map_ch, "separate")
