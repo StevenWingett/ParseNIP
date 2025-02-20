@@ -1,4 +1,5 @@
-# Parse Evercode Split-Pipe Nextflow Pipeline
+# Parse Nextflow-Integrated Pipeline (ParseNIP)
+(Processing Parse Evercode data using Split-Pipe)
 
 ## Overview
 This pipeline is designed for the processing of Evercode Datasets using split-pipe as the aligner.  Split-pipe was developed by [Parse Biosciences](https://www.parsebiosciences.com).
