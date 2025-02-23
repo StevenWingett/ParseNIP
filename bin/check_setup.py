@@ -1,21 +1,39 @@
 import os
 import glob
-import pprint
 import re
+import argparse
 
 
 # Get arguments
+parser = argparse.ArgumentParser(
+    description='''Checks user options passed to ParseNIP are valid''')
+
+parser.add_argument("fastq_folder", action="store", type=str, metavar='fastq_folder', help='Path to the folder containing FASTQ files')
+parser.add_argument("samplesheet_file", action="store", type=str, metavar='samplesheet_file', help='Path to the split-pipe samplesheet file')
+parser.add_argument("version", action="store", type=str, metavar='version', help='Chemistry version')
+
+parser.add_argument("--fasta_files", action="store", type=str, metavar='fasta_files', help='Comma-separated list of genome FASTA files')
+parser.add_argument("--gtf_files", action="store", type=str, metavar='gtf_files', help='Comma-separated list of genome GTF files')
+parser.add_argument("--genome_names", action="store", type=str, metavar='genome_names', help='Comma-separated list of genome genome names')
+parser.add_argument("--genome_dir", action="store", type=str, metavar='genome_dir', help='Genome folder name')
+
+
+args = parser.parse_args()    #Use parse_known_arg to differentiate between arguments pre-specified and those that are not
+
+
+
+
 #fastq_folder = "FASTQ"
-fastq_folder = "FASTQTEST"
-genome_dir = 'GENOME_INDEX'
+#fastq_folder = "FASTQTEST"
+#genome_dir = 'GENOME_INDEX'
 
-fasta_files = 'a.txt'
-gtf_files = 'b.txt'
-genome_names = 'my_name'
+#fasta_files = 'a.txt'
+#gtf_files = 'b.txt'
+#genome_names = 'my_name'
 
 
-samplesheet_file = 'parse_samplesheet.txt'
-version = 'v3'
+#samplesheet_file = 'parse_samplesheet.txt'
+#version = 'v3'
 
 
 # # # # # # # # # # # # # # # # # # # #
@@ -169,12 +187,10 @@ def check_make_genome(fasta_files, gtf_files, genome_names):
     gtf_files = gtf_files.split(',')
     genome_names = genome_names.split(',')
 
-
     # Check same number of FASTA/GTF/genome name terms
     if (len(fasta_files) != len(gtf_files)) or (len(fasta_files) != len(genome_names)):
         print('Specify the same number FASTA/GTF files and Genome Names!')
         problem_flag = 1
-
 
     # Check none of the terms are repeated
     if len(fasta_files) != len(set(fasta_files)):
@@ -211,36 +227,44 @@ def check_make_genome(fasta_files, gtf_files, genome_names):
 
 
 
-
-
 # # # # # # # # # # # # # # # # # # # #
 # Main Code
 # # # # # # # # # # # # # # # # # # # #
 
+# Check argument inputs okay
+if args.genome_dir is None:
+    if (args.fasta_files is None) or (args.gtf_files is None) or (args.genome_names is None):   # --genome_dir selected
+        print('You need to specify either --genome_dir or --fastq_files/--gtf_files/--genome_names')
+        exit (1)
+else:
+    if (args.fasta_files is not None) or (args.gtf_files is not None) or (args.genome_names is not None):  # --genome_dir NOT selected
+        print('You cannot specify --genome_dir together with --fastq_files/--gtf_files/--genome_names')
+        exit (1)
+
+
+# Now check other parameters
 exit_code = 0
 
 # Check chemistry version
 allowed_versions = ['v1', 'v2', 'v3']
-if version not in allowed_versions:
-    print(f'Chemistry version {version} is not a valid option!')
+if args.version not in allowed_versions:
+    print(f'Chemistry version {args.version} is not a valid option!')
     exit_code += 1
 
 
 #  Check FASTQ folder
-exit_code += check_fastq(fastq_folder)
+exit_code += check_fastq(args.fastq_folder)
 
 
-# Check that the make genome setup
 # Check all options defined
-exit_code = exit_code + check_make_genome(fasta_files, gtf_files, genome_names)
-
-
-# Check Genome folder, if specified
-exit_code = exit_code + check_genome_dir(genome_dir)
+if args.fasta_files is not None:   # Make genome de novo
+    exit_code = exit_code + check_make_genome(args.fasta_files, args.gtf_files, args.genome_names)
+else:    # Check existing genome folder
+    exit_code = exit_code + check_genome_dir(args.genome_dir)
 
 
 # Check Samplesheet
-exit_code = exit_code + check_samplesheet(samplesheet_file)
+exit_code = exit_code + check_samplesheet(args.samplesheet_file)
 
 if exit_code == 0:
     print('Done')
