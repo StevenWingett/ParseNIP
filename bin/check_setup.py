@@ -22,20 +22,6 @@ args = parser.parse_args()    #Use parse_known_arg to differentiate between argu
 
 
 
-
-#fastq_folder = "FASTQ"
-#fastq_folder = "FASTQTEST"
-#genome_dir = 'GENOME_INDEX'
-
-#fasta_files = 'a.txt'
-#gtf_files = 'b.txt'
-#genome_names = 'my_name'
-
-
-#samplesheet_file = 'parse_samplesheet.txt'
-#version = 'v3'
-
-
 # # # # # # # # # # # # # # # # # # # #
 # Functions
 # # # # # # # # # # # # # # # # # # # #
@@ -138,6 +124,10 @@ def check_samplesheet(samplesheet_file):
             well_id = char + str(i)
             allowed_wells_dict[well_id] = 0    # Initialise at 0
 
+    if not os.path.isfile(samplesheet_file):
+        print(f'{samplesheet_file} not found!')
+        return 1        
+
     with open(samplesheet_file, 'r') as f:
 
         for line in f:
@@ -211,9 +201,17 @@ def check_make_genome(fasta_files, gtf_files, genome_names):
             print(f'FASTA file {fasta_file} not found!')
             problem_flag = 1
 
+        if not ((fasta_file[-3:] == '.fa') or (fasta_file[-6:] == '.fa.gz') or (fasta_file[-6:] == '.fasta') or (fasta_file[-9:] == '.fasta.gz')):
+            print(f'Bad FASTA filename for {fasta_file} : extensions need to be .fa/.fa.gz/.fasta/.fasta.gz')
+            problem_flag = 1
+
     for gtf_file in gtf_files:
         if not os.path.isfile(gtf_file):
             print(f'GTF file {gtf_file} not found!')
+            problem_flag = 1
+
+        if not ((gtf_file[-4:] == '.gtf') or (gtf_file[-7:] == '.gtf.gz')):
+            print(f'Bad GTF filename for {gtf_file} : extensions need to be .gtf/.gtf.gz/')
             problem_flag = 1
 
     # Check genome names are alphanumeric (. and _ also allowed)
