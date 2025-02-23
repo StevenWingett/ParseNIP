@@ -8,9 +8,14 @@ import re
 #fastq_folder = "FASTQ"
 fastq_folder = "FASTQTEST"
 genome_dir = 'GENOME_INDEX'
-fasta_file = 'a.txt'
-gtf_file = 'b.txt'
+
+fasta_files = 'a.txt'
+gtf_files = 'b.txt'
+genome_names = 'my_name'
+
+
 samplesheet_file = 'parse_samplesheet.txt'
+version = 'v3'
 
 
 # # # # # # # # # # # # # # # # # # # #
@@ -84,13 +89,10 @@ def check_fastq(fastq_folder):   # Is the FASTQ folder ok?
 
 def check_genome_dir(genome_dir):    # Is the pre-build genome ok?
 
-    problem_flag = 0
-
     # Is genome directory folder present?
     if not os.path.isdir(genome_dir):
         print(f'{genome_dir} not found!')
-        problem_flag = 1
-        return problem_flag
+        return 1
 
     # Check if one of the expected files is present
     expected_file = 'all_genes.csv'
@@ -98,9 +100,9 @@ def check_genome_dir(genome_dir):    # Is the pre-build genome ok?
 
     if not os.path.isfile(expected_file):
         print(f'{expected_file} not found!')
-        problem_flag = 1
-
-    return problem_flag
+        return 1
+    
+    return 0
 
 
 
@@ -111,7 +113,6 @@ def check_genome_dir(genome_dir):    # Is the pre-build genome ok?
 # .
 # .
 def check_samplesheet(samplesheet_file):
-    problem_flag = 0
     allowed_wells_dict = {}   # Valid plate well IDs
 
     for char in 'ABCDEFGH':
@@ -127,38 +128,88 @@ def check_samplesheet(samplesheet_file):
             # Check not only whitespace characters
             if line == '':
                 print(f'Empty line in {samplesheet_file}!')
-                return(1)
+                return 1
             
             pat_match = re.search('^\s*$', line)
             if(pat_match):
                 print(f'Empty line in {samplesheet_file}!')
-                return(1)
+                return 1
 
             # Not exactly two elements after splitting on whitespace
             line_elements = line.split(' ')
             if len(line_elements) != 2:
                 print(f'Line does not contain exactly 2 elements:\n{line}')
-                return(1)
+                return 1
 
             # Not a valid well ID
             if line_elements[1] not in allowed_wells_dict:
                 print(f'Invalid Well ID: {line_elements[1]}')
-                return(1)
+                return 1
 
             # Samples should only be alpha-numeric characters
-            pat_match = re.search('^[A-z0-9_]+$', line_elements[0])
+            pat_match = re.search('^[A-z0-9_\.]+', line_elements[0])
             if not pat_match:
                 print(f'Sample Names need to only be alpha-numeric characters, NOT {line_elements[0]}!')
-                return(1)
+                return 1
 
             # Well used more than once
             allowed_wells_dict[line_elements[1]] = allowed_wells_dict[line_elements[1]] + 1
             if allowed_wells_dict[line_elements[1]] > 1:
                 print(f'Well ID {allowed_wells_dict[line_elements[1]]} listed more than once!')
                 return 1
-            
+        
     return 0
             
+
+def check_make_genome(fasta_files, gtf_files, genome_names):
+
+    problem_flag = 0
+
+    fasta_files = fasta_files.split(',')
+    gtf_files = gtf_files.split(',')
+    genome_names = genome_names.split(',')
+
+
+    # Check same number of FASTA/GTF/genome name terms
+    if (len(fasta_files) != len(gtf_files)) or (len(fasta_files) != len(genome_names)):
+        print('Specify the same number FASTA/GTF files and Genome Names!')
+        problem_flag = 1
+
+
+    # Check none of the terms are repeated
+    if len(fasta_files) != len(set(fasta_files)):
+        print('Do not specify duplicate FASTA files')
+        problem_flag = 1
+
+    if len(gtf_files) != len(set(gtf_files)):
+        print('Do not specify duplicate GTF files')
+        problem_flag = 1
+
+    if len(genome_names) != len(set(genome_names)):
+        print('Do not specify duplicate Genome Names')
+        problem_flag = 1
+
+    # Check the input files exist and have the correct file extensions
+    for fasta_file in fasta_files:
+        if not os.path.isfile(fasta_file):
+            print(f'FASTA file {fasta_file} not found!')
+            problem_flag = 1
+
+    for gtf_file in gtf_files:
+        if not os.path.isfile(gtf_file):
+            print(f'GTF file {gtf_file} not found!')
+            problem_flag = 1
+
+    # Check genome names are alphanumeric (. and _ also allowed)
+    for genome_name in genome_names:
+        pat_match = re.search('^[A-z0-9_\.]+$', genome_name)
+        if not pat_match:
+            print(f'Genome name need to only be alpha-numeric characters (including . and _), but NOT {genome_name}!')
+            problem_flag = 1
+
+    return problem_flag
+
+
 
 
 
@@ -166,29 +217,30 @@ def check_samplesheet(samplesheet_file):
 # Main Code
 # # # # # # # # # # # # # # # # # # # #
 
+exit_code = 0
+
+# Check chemistry version
+allowed_versions = ['v1', 'v2', 'v3']
+if version not in allowed_versions:
+    print(f'Chemistry version {version} is not a valid option!')
+    exit_code += 1
+
+
 #  Check FASTQ folder
-exit_code = check_fastq(fastq_folder)
+exit_code += check_fastq(fastq_folder)
 
 
-# Check FASTA file, if specified
-if not os.path.isfile(fasta_file):
-    print(f'FASTA file {fasta_file} not found!')
-    exit_code += 1
+# Check that the make genome setup
+# Check all options defined
+exit_code = exit_code + check_make_genome(fasta_files, gtf_files, genome_names)
 
-
-# Check GTF file, if specified
-if not os.path.isfile(gtf_file):
-    print(f'GTF file {gtf_file} not found!')
-    exit_code += 1
 
 # Check Genome folder, if specified
 exit_code = exit_code + check_genome_dir(genome_dir)
 
 
 # Check Samplesheet
-print(samplesheet_file)
 exit_code = exit_code + check_samplesheet(samplesheet_file)
-
 
 if exit_code == 0:
     print('Done')
@@ -196,5 +248,3 @@ else:
     print('Problem(s) with setup!')
 
 exit(exit_code)
-
-
