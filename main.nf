@@ -46,6 +46,7 @@ log.info """\
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+include { CHECK_SETUP } from './modules/local/python3/check_setup/main.nf'
 include { SPLITPIPE_INDEX } from './modules/local/splitpipe/index/main.nf'
 include { SPLITPIPE_MAP } from './modules/local/splitpipe/map/main.nf'
 include { CONCATENATE_FILES } from './modules/local/cat/contatenate_files/main.nf'
@@ -75,8 +76,13 @@ workflow {
 
     checkParameters()
 
+
+
+
+
     // TODO
     // Check input file exit and samplesheet is okay before staring the pipeline
+    CHECK_SETUP()
 
 
     // Create split-pipe index file
@@ -87,7 +93,7 @@ workflow {
         gtf_ch = Channel.fromPath(params.gtf.tokenize(',')).collect()
         def genome_names = params.genome_name.replace(",", " ")    // Convert comma-separated to space-separated, for split-pipe
 
-        SPLITPIPE_INDEX(fasta_ch, gtf_ch, genome_names)
+        SPLITPIPE_INDEX(fasta_ch, gtf_ch, genome_names, CHECK_SETUP.out)
     }
 
 
@@ -104,7 +110,7 @@ workflow {
             .fromPath(fastq_files)
             .set { reads_ch }
 
-            FASTQC(reads_ch)
+            FASTQC(reads_ch,  CHECK_SETUP.out)
         }
     }
  
@@ -115,7 +121,7 @@ workflow {
         .fromFilePairs(fastq_files)
         .set { read_pairs_ch }
 
-        TRIMGALORE_TRIM(read_pairs_ch)
+        TRIMGALORE_TRIM(read_pairs_ch, CHECK_SETUP.out)
     }
 
 
@@ -131,7 +137,7 @@ workflow {
             .groupTuple() 
             .set { fastq_ch }
         }
-            CONCATENATE_FILES(fastq_ch)
+            CONCATENATE_FILES(fastq_ch, CHECK_SETUP.out)
     }
 
 
@@ -152,9 +158,9 @@ workflow {
         
         if(build_index){
             index_ch = SPLITPIPE_INDEX.out
-            SPLITPIPE_MAP(read_pairs_ch, index_ch, file(params.samp_list), params.chemistry)
+            SPLITPIPE_MAP(read_pairs_ch, index_ch, file(params.samp_list), params.chemistry, CHECK_SETUP.out)
         } else {
-            SPLITPIPE_MAP(read_pairs_ch, file(params.genome_dir), file(params.samp_list), params.chemistry)
+            SPLITPIPE_MAP(read_pairs_ch, file(params.genome_dir), file(params.samp_list), params.chemistry, CHECK_SETUP.out)
         }
     }
 

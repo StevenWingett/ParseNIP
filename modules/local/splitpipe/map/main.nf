@@ -13,6 +13,7 @@ process SPLITPIPE_MAP {
         path genome_dir
         path samp_list
         val chemistry
+        val control   // Used to prevent this process executing until checks are finished
 
     output:
         path sublibrary_id

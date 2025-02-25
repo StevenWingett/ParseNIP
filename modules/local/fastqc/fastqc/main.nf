@@ -10,6 +10,7 @@
 
     input:
         path(reads)
+        val control   // Used to prevent this process executing until checks are finished
 
     output:
         path '*'    // *.html, *.zip might be better

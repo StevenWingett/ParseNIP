@@ -11,6 +11,7 @@ process SPLITPIPE_INDEX {
         path input_fasta
         path input_gtf
         val genome_name
+        val control   // Used to prevent this process executing until checks are finished
 
     output:
         path "GENOME_INDEX"

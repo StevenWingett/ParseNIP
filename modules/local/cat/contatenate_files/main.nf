@@ -6,6 +6,7 @@ process CONCATENATE_FILES {
 
     input:
         tuple val(id), path(f_fastqs), path(r_fastqs)
+        val control   // Used to prevent this process executing until checks are finished
 
     output:
         tuple val(id), path("*.fq.gz")

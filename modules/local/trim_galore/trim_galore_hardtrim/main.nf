@@ -11,6 +11,8 @@ process TRIMGALORE_TRIM {
 
     input:
         tuple val(read_id), path(reads)
+        val control   // Used to prevent this process executing until checks are finished
+        
 
     output:
         tuple val(read_id), path("*.r_1.64bp_5prime.fq.gz"), path("*.r_2.64bp_5prime.fq.gz"), emit: trimmed_seqs
