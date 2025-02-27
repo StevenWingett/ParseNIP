@@ -279,7 +279,7 @@ def checkParameters() {
     // Do we have all the relevant files for mapping?
     if ( (params.fastq != null) || (params.genome_dir != null) || (params.samp_list != null) ) {  // Mapping intended
         if ( (params.fastq == null) || (params.samp_list == null) ) {
-            error("Error:\nParameters --fastq/--samp_list need to be specified altogether, or not at all!")
+            error("Error:\nParameters --fastq/--genome_dir/--samp_list need to be specified altogether, or not at all!")
         }
         perform_mapping = true
     }
