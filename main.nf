@@ -84,10 +84,16 @@ workflow {
     // Check input file exit and samplesheet is okay before staring the pipeline
     if(perform_mapping) {   // Only check if performing the mapping
         if(build_index) {
-            CHECK_SETUP_BUILD_INDEX()
+
+            fasta_ch = Channel.fromPath(params.fasta.tokenize(',')).collect()
+            gtf_ch = Channel.fromPath(params.gtf.tokenize(',')).collect()
+
+            //CHECK_SETUP_BUILD_INDEX(params.fastq, file(params.fastq), params.samp_list, file(params.samp_list), params.chemistry, params.fasta, fasta_ch, params.gtf, gtf_ch, params.genome_name)
+            CHECK_SETUP_BUILD_INDEX(file(params.fastq), file(params.samp_list), params.chemistry, fasta_ch, gtf_ch, params.genome_name)
+            
             check_setup_ch = CHECK_SETUP_BUILD_INDEX.out
         } else {
-            CHECK_SETUP_PREBUILT_INDEX()
+            CHECK_SETUP_PREBUILT_INDEX(params.fastq, file(params.fastq), params.samp_list, file(params.samp_list), params.chemistry, params.genome_dir, file(params.genome_dir))
             check_setup_ch = CHECK_SETUP_PREBUILT_INDEX.out
         }
     } else {    //  Get channel output so later processes can proceed (don't check if only building a genome index)
@@ -96,12 +102,15 @@ workflow {
     }
 
 
+  
+
+
     // Create split-pipe index file
     if(build_index) {
         println("Building genome index")
         
-        fasta_ch = Channel.fromPath(params.fasta.tokenize(',')).collect()
-        gtf_ch = Channel.fromPath(params.gtf.tokenize(',')).collect()
+        //fasta_ch = Channel.fromPath(params.fasta.tokenize(',')).collect()
+        //gtf_ch = Channel.fromPath(params.gtf.tokenize(',')).collect()
         def genome_names = params.genome_name.replace(",", " ")    // Convert comma-separated to space-separated, for split-pipe
 
         SPLITPIPE_INDEX(fasta_ch, gtf_ch, genome_names, check_setup_ch)

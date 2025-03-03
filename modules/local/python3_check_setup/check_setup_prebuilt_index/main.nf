@@ -2,17 +2,20 @@
 
 process CHECK_SETUP_PREBUILT_INDEX {
 
-    publishDir params.outdir + "/test", mode: 'copy'
-
-    //input:
-    //    val(id)
+    input:
+        val(fastq_folder_name)
+        path(fastq_folder)
+        val(samp_list_name)
+        path(samp_list)
+        val(chemistry)
+        val(genome_dir_name)
+        path(genome_dir)
 
     output:
         val('CONTROL_1')    // Prevents later processes executing until after the check is completed
 
-
     script:
     """
-    sleep 10
+    python3 ${projectDir}/bin/check_setup.py ${fastq_folder_name} ${samp_list_name} ${chemistry} --genome_dir ${genome_dir_name}
     """
 }

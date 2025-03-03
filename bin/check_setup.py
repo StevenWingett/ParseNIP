@@ -16,7 +16,7 @@ parser.add_argument("--fasta_files", action="store", type=str, metavar='fasta_fi
 parser.add_argument("--gtf_files", action="store", type=str, metavar='gtf_files', help='Comma-separated list of genome GTF files')
 parser.add_argument("--genome_names", action="store", type=str, metavar='genome_names', help='Comma-separated list of genome genome names')
 parser.add_argument("--genome_dir", action="store", type=str, metavar='genome_dir', help='Genome folder name')
-
+parser.add_argument("--basename", action="store_true", help='Convert input paths to basenames. This may be useful when being passed symbolic links inside a Nextflow working directory')
 
 args = parser.parse_args()    #Use parse_known_arg to differentiate between arguments pre-specified and those that are not
 
@@ -250,19 +250,46 @@ if args.version not in allowed_versions:
     exit_code += 1
 
 
+# Convert paths to basenames, if option specified
+fastq_folder = args.fastq_folder  
+samplesheet_file = args.samplesheet_file
+fasta_files = args.fasta_files
+gtf_files = args.gtf_files
+genome_dir = args.genome_dir
+
+if args.basename:
+    if fastq_folder is not None:
+        fastq_folder = os.path.basename(fastq_folder)
+
+    if samplesheet_file is not None:
+        samplesheet_file = os.path.basename(samplesheet_file)
+
+    if fasta_files is not None:
+        fasta_files = fasta_files.split(',')
+        fasta_files = [os.path.basename(fasta_file) for fasta_file in fasta_files]
+        fasta_files = ','.join(fasta_files)
+
+    if gtf_files is not None:
+        gtf_files = gtf_files.split(',')
+        gtf_files = [os.path.basename(gtf_file) for gtf_file in gtf_files]
+        gtf_files = ','.join(gtf_files)
+
+    if genome_dir is not None:
+        genome_dir = os.path.basename(genome_dir)
+
 #  Check FASTQ folder
-exit_code += check_fastq(args.fastq_folder)
+exit_code += check_fastq(fastq_folder)
 
 
 # Check all options defined
 if args.fasta_files is not None:   # Make genome de novo
-    exit_code = exit_code + check_make_genome(args.fasta_files, args.gtf_files, args.genome_names)
+    exit_code = exit_code + check_make_genome(fasta_files, gtf_files, args.genome_names)
 else:    # Check existing genome folder
-    exit_code = exit_code + check_genome_dir(args.genome_dir)
+    exit_code = exit_code + check_genome_dir(genome_dir)
 
 
 # Check Samplesheet
-exit_code = exit_code + check_samplesheet(args.samplesheet_file)
+exit_code = exit_code + check_samplesheet(samplesheet_file)
 
 if exit_code == 0:
     print('Done')
