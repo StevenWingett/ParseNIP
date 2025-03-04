@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument("fastq_folder", action="store", type=str, metavar='fastq_folder', help='Path to the folder containing FASTQ files')
 parser.add_argument("samplesheet_file", action="store", type=str, metavar='samplesheet_file', help='Path to the split-pipe samplesheet file')
-parser.add_argument("version", action="store", type=str, metavar='version', help='Chemistry version')
+parser.add_argument("chemistry", action="store", type=str, metavar='version', help='Chemistry version')
 
 parser.add_argument("--fasta_files", action="store", type=str, metavar='fasta_files', help='Comma-separated list of genome FASTA files')
 parser.add_argument("--gtf_files", action="store", type=str, metavar='gtf_files', help='Comma-separated list of genome GTF files')
@@ -244,9 +244,9 @@ else:
 exit_code = 0
 
 # Check chemistry version
-allowed_versions = ['v1', 'v2', 'v3']
-if args.version not in allowed_versions:
-    print(f'Chemistry version {args.version} is not a valid option!')
+allowed_chemistry_versions = ['v1', 'v2', 'v3']
+if args.chemistry not in allowed_chemistry_versions:
+    print(f'Chemistry version {args.chemistry} is not a valid option!')
     exit_code += 1
 
 
