@@ -3,12 +3,12 @@
 process CHECK_SETUP_PREBUILT_INDEX {
 
     input:
-        val(fastq_folder_name)
+        //val(fastq_folder_name)
         path(fastq_folder)
-        val(samp_list_name)
+        //val(samp_list_name)
         path(samp_list)
         val(chemistry)
-        val(genome_dir_name)
+        //val(genome_dir_name)
         path(genome_dir)
 
     output:
@@ -16,6 +16,6 @@ process CHECK_SETUP_PREBUILT_INDEX {
 
     script:
     """
-    python3 ${projectDir}/bin/check_setup.py ${fastq_folder_name} ${samp_list_name} ${chemistry} --genome_dir ${genome_dir_name}
+    python3 ${projectDir}/bin/check_setup.py ${fastq_folder} ${samp_list} ${chemistry} --genome_dir ${genome_dir}
     """
 }

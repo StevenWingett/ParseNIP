@@ -93,7 +93,7 @@ workflow {
             
             check_setup_ch = CHECK_SETUP_BUILD_INDEX.out
         } else {
-            CHECK_SETUP_PREBUILT_INDEX(params.fastq, file(params.fastq), params.samp_list, file(params.samp_list), params.chemistry, params.genome_dir, file(params.genome_dir))
+            CHECK_SETUP_PREBUILT_INDEX(file(params.fastq), file(params.samp_list), params.chemistry, file(params.genome_dir))
             check_setup_ch = CHECK_SETUP_PREBUILT_INDEX.out
         }
     } else {    //  Get channel output so later processes can proceed (don't check if only building a genome index)
