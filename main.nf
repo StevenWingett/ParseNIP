@@ -19,8 +19,9 @@ params.trim = false
 params.skip_fastqc = false
 
 log.info """\
-    P A R S E  E V E R C O D E - N F  P I P E L I N E
-    =================================================
+    P A R S E  N E X T F L O W - I N T E G R A T E D  P I P E L I N E
+    ( P A R S E N I P)
+    ==================================================================
     Output folder                   : ${params.outdir}
     FASTA file(s)                   : ${params.fasta}
     GTF file(s)                     : ${params.gtf}
