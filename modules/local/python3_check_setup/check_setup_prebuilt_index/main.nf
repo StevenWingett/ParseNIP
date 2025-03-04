@@ -3,12 +3,9 @@
 process CHECK_SETUP_PREBUILT_INDEX {
 
     input:
-        //val(fastq_folder_name)
         path(fastq_folder)
-        //val(samp_list_name)
         path(samp_list)
         val(chemistry)
-        //val(genome_dir_name)
         path(genome_dir)
 
     output:
