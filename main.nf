@@ -50,7 +50,6 @@ log.info """\
 include { CHECK_SETUP_BUILD_INDEX } from './modules/local/python3_check_setup/check_setup_build_index/main.nf'
 include { CHECK_SETUP_PREBUILT_INDEX } from './modules/local/python3_check_setup/check_setup_prebuilt_index/main.nf'
 include { CHECK_SETUP_DUMMY_RUN } from './modules/local/python3_check_setup/check_setup_dummy_run/main.nf'
-
 include { SPLITPIPE_INDEX } from './modules/local/splitpipe/index/main.nf'
 include { SPLITPIPE_MAP } from './modules/local/splitpipe/map/main.nf'
 include { CONCATENATE_FILES } from './modules/local/cat/contatenate_files/main.nf'
