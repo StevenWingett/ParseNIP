@@ -155,7 +155,7 @@ def check_samplesheet(samplesheet_file):
                 return 1
 
             # Samples should only be alpha-numeric characters
-            pat_match = re.search('^[A-z0-9_\.]+', line_elements[0])
+            pat_match = re.search('^[A-z0-9_\.]+$', line_elements[0])
             if not pat_match:
                 print(f'Sample Names need to only be alpha-numeric characters (letters, numbers or underscores), NOT {line_elements[0]}!')
                 return 1
