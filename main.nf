@@ -102,15 +102,15 @@ workflow {
     }
 
 
-  
-
-
     // Create split-pipe index file
     if(build_index) {
         println("Building genome index")
-        
-        //fasta_ch = Channel.fromPath(params.fasta.tokenize(',')).collect()
-        //gtf_ch = Channel.fromPath(params.gtf.tokenize(',')).collect()
+
+        if(!perform_mapping) {  // Get these channels here as they won't have been created above if not performing mapping
+            fasta_ch = Channel.fromPath(params.fasta.tokenize(',')).collect()
+            gtf_ch = Channel.fromPath(params.gtf.tokenize(',')).collect()
+        }
+             
         def genome_names = params.genome_name.replace(",", " ")    // Convert comma-separated to space-separated, for split-pipe
 
         SPLITPIPE_INDEX(fasta_ch, gtf_ch, genome_names, check_setup_ch)
