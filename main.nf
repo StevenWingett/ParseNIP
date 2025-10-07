@@ -17,6 +17,8 @@ params.concatenate = false
 params.fastq = null
 params.trim = false
 params.skip_fastqc = false
+params.fastq_samp_slice = '3000000 4000000'
+
 
 log.info """\
     P A R S E  N E X T F L O W - I N T E G R A T E D  P I P E L I N E
@@ -34,6 +36,7 @@ log.info """\
     Skip FastQC                     : ${params.skip_fastqc}
     Hard trim FASTQ files           : ${params.trim}
     Concatenate FASTQ files         : ${params.concatenate}
+    FASTQ Sample Slice              : ${params.fastq_samp_slice}
     Author                          : ${workflow.manifest.author}
     Homepage                        : ${workflow.manifest.homePage}
     Pipeline Version                : ${workflow.manifest.version}
@@ -178,9 +181,9 @@ workflow {
         
         if(build_index){
             index_ch = SPLITPIPE_INDEX.out
-            SPLITPIPE_MAP(read_pairs_ch, index_ch, file(params.samp_list), params.chemistry, check_setup_ch)
+            SPLITPIPE_MAP(read_pairs_ch, index_ch, file(params.samp_list), params.chemistry, check_setup_ch, params.fastq_samp_slice)
         } else {
-            SPLITPIPE_MAP(read_pairs_ch, file(params.genome_dir), file(params.samp_list), params.chemistry, check_setup_ch)
+            SPLITPIPE_MAP(read_pairs_ch, file(params.genome_dir), file(params.samp_list), params.chemistry, check_setup_ch, params.fastq_samp_slice)
         }
     }
 
