@@ -24,6 +24,8 @@ process SPLITPIPE_MAP {
     """
     echo "post_min_map_frac 0.001" > parfile.txt
     echo "fastq_samp_slice ${fastq_samp_slice}" >> parfile.txt
+    # Set the minimum number of reads to a minimum of 1,000
+    echo "inqc_min_reads 1000" >> parfile.txt  
 
     split-pipe \
     --mode all \
