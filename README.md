@@ -7,15 +7,27 @@ Only 1 Parse "experiment" should be processed at a time.  Each experiment can in
 
 Pipeline steps:
 
-1. Build a genome index (optional: `--fasta` `--gtf` `--genome_name`).  To do this, specify a FASTA file, a GTF file and a genome name.  Alternatively, the FASTA and GTF files may be specified using the `--genome` option (see: https://nf-co.re/docs/usage/reference_genomes).  The `--genome` option uses information in a nextflow configuration file to determine the correct FASTQ and GTF files to use.
+1. Build a genome index (optional).  To do this, specify a FASTA file, a GTF file and a genome name:
 
-    If you do NOT wish to create a genome de-novo, but would rather use a pre-existing genome, then specify the `--genome_dir` option.  REMEMBER: Parse recommends that a genome index should be built by the same version of split-pipe that is used to perform the mapping.  Thus, building the genome de-novo each time the pipeline is run ensures that this is the case.
+        --fasta [FASTA file] --gtf [GTF file] --genome_name [genome name]    
 
-    If you need to build a multi-species genome, please specify the FASTA files, GTF files and genome names as a comma-separated list.  For example, to build an index comprising 2 genomes:
+If you need to build a multi-species genome, please specify the FASTA files, GTF files and genome names as a comma-separated list.  For example, to build an index comprising 2 genomes:
 
-    `--fasta genome1.fasta,genome2.fasta --gtf genome1.gtf,genome2.gtf --genome_name genome1_name,genome2_name`
+    --fasta genome1.fasta,genome2.fasta --gtf genome1.gtf,genome2.gtf --genome_name genome1_name,genome2_name
 
-    It is also possible to instruct the pipeline to only build a genome index i.e. to NOT process FASTQ files.  To do that, specify the parameters to build the index (`--fasta` /`--gtf` / `--genome_name`), but do not specify other parameters (e.g. `--fastq`). 
+Alternatively, the FASTA and GTF files may be specified using the `--genome` option (see: https://nf-co.re/docs/usage/reference_genomes).  The `--genome` option uses information in a nextflow configuration file to determine the correct FASTQ and GTF files to use.
+
+(It is also possible to instruct the pipeline to only build a genome index i.e. to NOT process FASTQ files.  To do that, specify the parameters to build the index (`--fasta [FASTA file] --gtf [GTF file] --genome_name [genome name]`), but do not specify other parameters (e.g. `--fastq`)). 
+
+If you do NOT wish to create a genome de-novo, but would rather use a pre-existing genome, then specify 
+
+    --genome_dir [genome folder]
+
+To reference a pre-build genome using a configuration file: 
+
+    --genome --genome_name [genome name in config file]
+
+**REMEMBER: Parse recommends that a genome index should be built by the same version of split-pipe that is used to perform the mapping.  Thus, building the genome de-novo each time the pipeline is run ensures that this is the case.**
 
 2.  FASTQC - General quality check on the sequence data.  (This step can be omitted with the option `--skip_fastqc`.)
 
@@ -23,7 +35,7 @@ Pipeline steps:
 
 4.  Concatenate (optional: `--concatenate`) - FASTQ files from the sample sublibrary (sometimes these datasets may be split across multiple lanes).
 
-5.  Map the reads using the mapper split-pipe, produced by Parse Biosciences.  To build the genome de-novo: `--fasta` `--gtf` `--genome_nam`e; to reference a pre-build folder: `genome_dir`; to reference a pre-build genome using a configuration file: `--genome` `--genome_name`. 
+5.  Map the reads using the mapper split-pipe, produced by Parse Biosciences.  
 
 6.  Combine the results from different sublibraries (if present).
 
@@ -66,6 +78,15 @@ Sample14 B2 \
 . 
 
 This is the format that split-pipe takes as input if being run outside of nextflow.
+
+From using split-pipe, it is appears that ranges may be specified:
+
+xcond_1 A1-A6 \
+xcond_2 C1-C6 \
+xcond_3 D1-D6 
+
+**Sample names should NOT be repeated in the samplesheet, as this will lead to wells being ignored by split-pipe!**
+
 
 ## Example command
 The following command illustrates how to use the nf-split-pipe nextflow pipeline.  The processing has been configured using the file nextflow.config, using a profile named lmb_cluster.  The space-delimited file parse_samplesheet.txt details the plate well / sample relationships.  Prior to mapping, the FASTQ reads will be trimmed and FASTQ files from the same sublibrary will be concatenated.  The job will be run in the background (`-bg`) - we strongly advise running nf-split-pipe jobs in the background, as processing may take hours/days to complete.  

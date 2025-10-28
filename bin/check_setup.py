@@ -2,6 +2,7 @@ import os
 import glob
 import re
 import argparse
+from collections import OrderedDict  # For creating an ordered dictionary
 
 
 # Get arguments
@@ -118,6 +119,7 @@ def check_genome_dir(genome_dir):    # Is the pre-build genome ok?
 # .
 def check_samplesheet(samplesheet_file):
     allowed_wells_dict = {}   # Valid plate well IDs
+    samples_in_sheet = {}
 
     for char in 'ABCDEFGH':
         for i in range(1, 13):
@@ -148,26 +150,86 @@ def check_samplesheet(samplesheet_file):
             if len(line_elements) != 2:
                 print(f'Line does not contain exactly 2 elements:\n{line}')
                 return 1
-
-            # Not a valid well ID
-            if line_elements[1] not in allowed_wells_dict:
-                print(f'Invalid Well ID: {line_elements[1]}')
-                return 1
+            
+            sample_id = line_elements[0]
+            wells_string = line_elements[1]
 
             # Samples should only be alpha-numeric characters
-            pat_match = re.search('^[A-z0-9_\.]+', line_elements[0])
+            pat_match = re.search('^[A-z0-9_\.]+$', sample_id)
             if not pat_match:
-                print(f'Sample Names need to only be alpha-numeric characters, NOT {line_elements[0]}!')
+                print(f'Sample Names need to only be alpha-numeric characters, NOT {sample_id}!')
+                return 1
+            
+            # Check wells
+            # Determine well list
+            if re.search("^([A-Z]?[0-9]{1,2},?)+$", wells_string):   # Comma-separated list of wells
+                if wells_string[-1] == ',':
+                    wells_string = wells_string[:-1]  # Remove trailing comma
+                
+                #print(wells_string)
+                wells_list = wells_string.split(',')
+
+            elif re.search("^[A-Z]{1}[0-9]{1,2}-[A-Z]{1}[0-9]{1,2}$", wells_string):
+                wells_list = process_well_range(wells_string)
+
+            else:
+                print(f'Incorrect well format {wells_string}')
+                return 1
+            
+            if len(wells_list) == 0:
+                print('Invalid well range specified in samplesheet!')
                 return 1
 
-            # Well used more than once
-            allowed_wells_dict[line_elements[1]] = allowed_wells_dict[line_elements[1]] + 1
-            if allowed_wells_dict[line_elements[1]] > 1:
-                print(f'Well ID {allowed_wells_dict[line_elements[1]]} listed more than once!')
-                return 1
-        
-    return 0
+            for well_id in wells_list:   # Is the well allowed
+                if well_id not in allowed_wells_dict:
+                    print(f'Invalid Well ID: {well_id}')
+                    return 1
+
+                # Well used more than once?
+                allowed_wells_dict[well_id] = allowed_wells_dict[well_id] + 1
+                if allowed_wells_dict[well_id] > 1:
+                    print(f'Well ID {well_id} listed more than once in samplesheet!')
+                    return 1
             
+    return 0
+
+
+def process_well_range(well_range):
+    well_range = well_range.replace(' ', '')
+    well_range = well_range.split('-')
+    first_well = well_range[0]
+    last_well = well_range[1]
+    selected_wells = []
+    add_well_flag = False
+
+    # Create Well-Sample lookup ordered dictionary
+    parse_well_sample_lookup = OrderedDict()
+    letters = [chr(i) for i in range(ord('A'), ord('H') + 1)]
+    for letter in letters:
+        for i in range(1, 13):
+            parse_well_sample_lookup[f'{letter}{i}'] = None
+
+
+    for well in parse_well_sample_lookup:
+        if well == first_well:
+            selected_wells.append(well)
+            add_well_flag = True
+        elif well == last_well:
+            selected_wells.append(well)
+            add_well_flag = False
+        else:
+            if add_well_flag == True:
+                selected_wells.append(well)
+
+    if len(selected_wells) == 0:
+        return []
+
+
+    if add_well_flag == True:
+        return []
+    
+    return selected_wells
+
 
 def check_make_genome(fasta_files, gtf_files, genome_names):
 
