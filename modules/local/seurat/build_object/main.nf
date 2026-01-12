@@ -40,8 +40,8 @@
       done
 
     else
-        mkdir -p seurat_data_objects_${prefix}_\$D/
-        echo "Not making Seurat object as no all-sample folder found! (This will happen if you only have 1 sample and you will need to create the Seurat object yourself.)" > seurat_data_objects_${prefix}_\$D/README.txt;
+        mkdir -p seurat_data_objects_${prefix}/
+        echo "Not making Seurat object as no all-sample folder found! (This will happen if you only have 1 sample and you will need to create the Seurat object yourself.)" > seurat_data_objects_${prefix}/README.txt;
     fi
     """
 }
