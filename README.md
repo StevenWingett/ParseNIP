@@ -7,7 +7,7 @@ Only 1 Parse "experiment" should be processed at a time.  Each experiment can in
 
 Pipeline steps:
 
-1. Build a genome index (optional).  To do this, specify a FASTA file, a GTF file and a genome name:
+1. Build a genome index (optional: `--fasta` `--gtf` `--genome_name`).  To do this, specify a FASTA file, a GTF file and a genome name.  Alternatively, the FASTA and GTF files may be specified using the `--genome` option (see: https://nf-co.re/docs/usage/reference_genomes).  The `--genome` option uses information in a Nextflow configuration file to determine the correct FASTQ and GTF files to use.
 
         --fasta [FASTA file] --gtf [GTF file] --genome_name [genome name]    
 
@@ -35,7 +35,7 @@ To reference a pre-build genome using a configuration file:
 
 4.  Concatenate (optional: `--concatenate`) - FASTQ files from the sample sublibrary (sometimes these datasets may be split across multiple lanes).
 
-5.  Map the reads using the mapper split-pipe, produced by Parse Biosciences.  
+5.  Map the reads using the mapper split-pipe, produced by Parse Biosciences.  To build the genome de-novo: `--fasta` `--gtf` `--genome_name`; to reference a pre-build folder: `genome_dir`; to reference a pre-build genome using a configuration file: `--genome` `--genome_name`. 
 
 6.  Combine the results from different sublibraries (if present).
 
@@ -54,7 +54,7 @@ test2.s_1.r_2.fq.gz \
 test2.s_2.r_1.fq.gz \
 test2.s_2.r_2.fq.gz 
 
-Here we have 2 sub-libraries, "test" and "test2".  Sublibrary "test" was run on lane1, whereas sublibrary2 was run on lane 1 and lane 2.  The option --concatenate will join the FASTQ files for test2 prior to mapping.  So, sublibrary files are merged before mapping, but different sublibraries are kept separate.  After mapping however, separate sublibraries are combined using a split-pipe algorithm.
+Here we have 2 sub-libraries, "test" and "test2".  Sublibrary "test" was run on lane1, whereas sublibrary2 was run on lane 1 and lane 2.  The option `--concatenate` will join the FASTQ files for test2 prior to mapping.  So, sublibrary files are merged before mapping, but different sublibraries are kept separate.  After mapping however, separate sublibraries are combined using a split-pipe algorithm.
 
 ## A note on the sample list file
 This should be a **space-delimited file**, listing each sample and well ID e.g.
@@ -77,7 +77,7 @@ Sample14 B2 \
 . \
 . 
 
-This is the format that split-pipe takes as input if being run outside of nextflow.
+This is the format that split-pipe takes as input if being run outside of Nextflow.
 
 From using split-pipe, it is appears that ranges may be specified:
 
@@ -89,7 +89,7 @@ xcond_3 D1-D6
 
 
 ## Example command
-The following command illustrates how to use the nf-split-pipe nextflow pipeline.  The processing has been configured using the file nextflow.config, using a profile named lmb_cluster.  The space-delimited file parse_samplesheet.txt details the plate well / sample relationships.  Prior to mapping, the FASTQ reads will be trimmed and FASTQ files from the same sublibrary will be concatenated.  The job will be run in the background (`-bg`) - we strongly advise running nf-split-pipe jobs in the background, as processing may take hours/days to complete.  
+The following command illustrates how to use the nf-split-pipe Nextflow pipeline.  The processing has been configured using the file nextflow.config, using a profile named lmb_cluster.  The space-delimited file parse_samplesheet.txt details the plate well / sample relationships.  Prior to mapping, the FASTQ reads will be trimmed and FASTQ files from the same sublibrary will be concatenated.  The job will be run in the background (`-bg`) - we strongly advise running nf-split-pipe jobs in the background, as processing may take hours/days to complete.  
 
 `nextflow run -config nextflow.config -profile lmb_cluster ./nf-split-pipe/main.nf --samp_list parse_samplesheet.txt --fastq FASTQ --trim --concatenate --gtf Homo_sapiens.GRCh38.102.gtf --fasta homo_sapiens__GRCh38__release102.dna.fa --genome_name Homo_sapiens.GRCh38.102 -bg`
 
